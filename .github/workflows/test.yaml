@@ -20,3 +20,7 @@ jobs:
         run: snyk code test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Filter SQL Injection issues from Snyk Code Test results
+        run: |
+          cat snyk_code_results.json | jq '. | select(.vulnerabilities[].title | contains("SQL Injection"))'
