@@ -1,4 +1,4 @@
-name: Example workflow for Maven using Snyk
+name: Example Maven workflow with Snyk
 on: push
 jobs:
   security:
@@ -6,12 +6,21 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'  # Or your desired distribution
+          java-version: '11'        # Or whichever version you're using
+
       - name: Run Snyk to check for vulnerabilities in Maven dependencies
         uses: snyk/actions/maven@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
       - name: Run Snyk Code Test for security issues in source code
-        uses: snyk/actions/code@master
+        run: snyk code test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
