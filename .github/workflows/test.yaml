@@ -16,8 +16,8 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Run Snyk Code Test for SQL Injection
-        run: snyk code test
+      - name: Run Snyk Code Test for security issues in source code
+        run: snyk code test --json > snyk_code_results.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
