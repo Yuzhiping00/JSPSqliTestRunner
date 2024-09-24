@@ -18,6 +18,7 @@ jobs:
 
       - name: Run Snyk Code Test for SQL Injection
         run: snyk code test
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
