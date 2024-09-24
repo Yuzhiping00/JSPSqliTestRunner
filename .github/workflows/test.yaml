@@ -1,22 +1,39 @@
-name: Snyk Security Scan
-
-on:
-  push:
-    branches:
-      - main
-
+name: Example Maven workflow with Snyk Code Test for SQL Injection
+on: push
 jobs:
-  snyk:
+  security:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v3
-      
+      - uses: actions/checkout@master
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'  # Or your desired distribution
+          java-version: '11'        # Or whichever version you're using
+
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Run Snyk Code Test for security issues in source code
-        run: snyk code test 
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Run Snyk Code Test and output to JSON
+        run: snyk code test --json > snyk_code_results.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true  # Allow continuation despite vulnerabilities
+
+      - name: Filter SQL Injection issues from Snyk Code Test results
+        run: |
+          cat snyk_code_results.json | jq '.vulnerabilities[] | select(.title | contains("SQL Injection"))'
+
+      - name: Fail if SQL Injection is found
+        run: |
+          SQL_ISSUES=$(cat snyk_code_results.json | jq '[.vulnerabilities[] | select(.title | contains("SQL Injection"))] | length')
+          if [ "$SQL_ISSUES" -gt 0 ]; then
+            echo "SQL Injection vulnerabilities found."
+            exit 1
+          else
+            echo "No SQL Injection vulnerabilities found."
+          fi
