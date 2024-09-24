@@ -17,11 +17,6 @@ jobs:
         run: npm install -g snyk
 
       - name: Run Snyk Code Test for security issues in source code
-        run: snyk code test --json > snyk_code_results.json
+        run: snyk code test 
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
-
-      - name: Filter SQL Injection issues from Snyk Code Test results
-        run: |
-          cat snyk_code_results.json | jq '. | select(.vulnerabilities[].title | contains("SQL Injection"))'
