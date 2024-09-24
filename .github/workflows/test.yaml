@@ -1,26 +1,37 @@
-name: Example Maven workflow with Snyk
-on: push
+name: Snyk Security Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
-  security:
+  snyk:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@master
+      - name: Check out the repository
+        uses: actions/checkout@v3
 
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'  # Or your desired distribution
-          java-version: '11'        # Or whichever version you're using
-
-      - name: Run Snyk to check for vulnerabilities in Maven dependencies
-        uses: snyk/actions/maven@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
+            java-version: '11'
+            distribution: 'temurin'
+      
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Run Snyk Code Test for security issues in source code
+      - name: Set environment variable for Snyk
+        run: echo "SNYK_TOKEN=${{ secrets.SNYK_TOKEN }}" >> $GITHUB_ENV
+
+      - name: Build with maven
+        run: mvn clean package
+
+      - name: Run Snyk Code Test for SQL Injection
         run: snyk code test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
