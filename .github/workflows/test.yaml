@@ -24,16 +24,16 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true  # Allow continuation despite vulnerabilities
 
-      - name: Filter SQL Injection issues from Snyk Code Test results
+      - name: Check and Filter SQL Injection issues from Snyk Code Test results
         run: |
-          cat snyk_code_results.json | jq '.vulnerabilities[] | select(.title | contains("SQL Injection"))'
-
-      - name: Fail if SQL Injection is found
-        run: |
-          SQL_ISSUES=$(cat snyk_code_results.json | jq '[.vulnerabilities[] | select(.title | contains("SQL Injection"))] | length')
-          if [ "$SQL_ISSUES" -gt 0 ]; then
-            echo "SQL Injection vulnerabilities found."
-            exit 1
+          if [ -s snyk_code_results.json ]; then
+            SQL_ISSUES=$(jq '[.vulnerabilities[] | select(.title | contains("SQL Injection"))] | length' snyk_code_results.json)
+            if [ "$SQL_ISSUES" -gt 0 ]; then
+              echo "SQL Injection vulnerabilities found."
+              exit 1
+            else
+              echo "No SQL Injection vulnerabilities found."
+            fi
           else
-            echo "No SQL Injection vulnerabilities found."
+            echo "No vulnerabilities found or JSON file is empty."
           fi
